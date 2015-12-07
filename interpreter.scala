@@ -3,21 +3,20 @@ package lang
 object Interpreter {
 
     def interpret(stmt: Stmt) = {
-    
-        type Env = Map[String, Value]
-
-        var fnEnv = Map.empty[String, Closure]
-
-        var globalMem = Map.empty[String, Value]
-        // Global memory used /only/ for variables outside all functions
-
+        // Parser packages programs in a function with an empty name, so we don't need any global memory
+        type Env = Map[String, Location]
+        
+        class Location(value: Value) {
+            var contents = value
+        }
+        
         //for testing only
         var testRet = List.empty[Any]
 
         def matchType(value: Value, typ: Type): Boolean = value match {
-            case IntVal(n) => typ == NumT
-            case StrVal(s) => typ == StrT
-            case BoolVal(b) => typ == BoolT
+            case IntVal(n) => typ == NumType
+            case StrVal(s) => typ == StrType
+            case BoolVal(b) => typ == BoolType
             case _ => throw new Exception("Unsupported type")
         }
 
@@ -41,16 +40,27 @@ object Interpreter {
             case POr(left, right) => BoolVal(evalBool(expr, env))
             case PAnd(left, right) => BoolVal(evalBool(expr, env))
             case PNot(bool) => BoolVal(evalBool(expr, env))
-            case Ident(name) =>
-                val item = env.get(name)
-                if (item == None) throw new Exception("Unassigned variable")
-                else item.get
+            case Ident(name) => val item = env.getOrElse(name, throw new Exception("Unassigned variable"))
             case FnCall(id, args) =>
                 val params = fnEnv(id.name).params
-                val parentIsGlobal = (fnEnv(id.name).parent == "")
+                //val parentIsGlobal = (fnEnv(id.name).parent == "")
                 var cbvrMap = Map.empty[String, String] // All these values will be strings
                 if (args.size != params.size) throw new Exception("Incorrect number of parameters!")
-                for (i <- 0 until args.size) {
+                
+                val inputs = args.zip(params)
+                
+                for (input <- inputs) {
+                    val (arg, param) = input
+                    val argVal = eval(arg.expr, env)
+                    if (!(matchType(argVal, param._2))) throw new Exception("Types don't match!")
+                    else {
+                        fnEnv(id.name).env += (param._1.name -> arg)
+                        if (arg.cbvr)
+                            cbvrMap += (param._1.name -> getArgName(arg))
+                    }                
+                }
+                
+                /* for (i <- 0 until args.size) {
                     val argExpr = args(i).expr; val argIsCBVR = args(i).cbvr
                     val argi = eval(argExpr, env)
                     val parami = params(i)
@@ -60,7 +70,7 @@ object Interpreter {
                         if (argIsCBVR) 
                             cbvrMap += (parami._1.name -> getArgName(args(i)))
                     }
-                }
+                } */
                 exec(fnEnv(id.name).body, id.name)
                 for ((param, argName) <- cbvrMap) {
                     if (parentIsGlobal) globalMem += (argName -> fnEnv(id.name).env(param))

@@ -15,6 +15,8 @@ sealed trait Type
 //Evaluation
 sealed trait Value
 
+//Interpretation
+sealed trait Location
 /*-----------*/
 /*  Tokens   */
 /*-----------*/
@@ -125,4 +127,4 @@ case class StrVal(s: String) extends Value
 case object VoidVal extends Value
 
 //Closure
-case class Closure(retType: Type, var retVal: Option[Value], params: List[(Ident, Type)], body: Stmt, var env: Map[String, Value], parent: Ident)
+case class Closure(retType: Type, var retVal: Option[Value], params: List[(Ident, Type)], body: Stmt, var env: Map[String, Value], parent: Ident) extends Value

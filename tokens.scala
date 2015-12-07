@@ -96,10 +96,10 @@ case class Or(left: Expr, right: Expr) extends Expr
 case class And(left: Expr, right: Expr) extends Expr
 case class Not(expr: Expr) extends Expr
 case class Neg(expr: Expr) extends Expr
-case class FnCall(id: Ident, args: List[Argument]) extends Expr
+case class FnCall(id: Ident, args: List[Expr]) extends Expr
 
 //Statements
-case class Assign(id: Ident, value: Expr) extends Stmt
+case class Assign(id: Ident, expr: Expr) extends Stmt
 case class Ret(expr: Expr) extends Stmt
 case class Body(stuff: List[Stmt]) extends Stmt
 case class While(cond: Expr, bod: Stmt) extends Stmt
@@ -109,10 +109,11 @@ case class ExprAsStmt(expr: Expr) extends Stmt
 
 //Declarations
 case class VarDef(id: Ident, value: Expr) extends Decl
-case class FnDef(typ: Type, id: Ident, args: List[(Ident, Type)], bod: Stmt) extends Decl
+case class ConstDef(id: Ident, value: Expr) extends Decl
+case class FnDef(typ: Type, id: Ident, args: List[Argument], bod: Stmt) extends Decl
 
 //Arguments
-case class Argument(expr: Expr, cbvr: Boolean)
+case class Argument(ident: Ident, typ: Type, cbvr: Boolean = false)
 
 /*--------------*/
 /*  Eval Types  */

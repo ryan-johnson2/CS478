@@ -130,10 +130,9 @@ object Interpreter {
             case _ => throw new Exception("Not a candidate for CBVR")
         }
 
-        def exec(stmt: Stmt, curFn: String): Unit = {
-            var env = if (!(curFn == "")) fnEnv(curFn).env else globalMem
+        def exec(stmt: Stmt, env: Env): Unit = {
             stmt match {
-                case Ret(expr) => 
+                case Ret(expr) => // Change to use exceptions
                     val ans = eval(expr, env)
                     ans match {
                         case BoolVal(b) => 
@@ -168,13 +167,21 @@ object Interpreter {
                     }
                     else if (env.get(id.name) != None) fnEnv(curFn).env += (id.name -> eval(value, env))
                     else throw new Exception(id.name + " not in current environment!")
+
+                case ExprAsStmt(expr) => eval(expr, env)
+                case _ => println("Broken")
+            }
+        }
+        
+        def declare(decl: Decl, env: Env): Unit = {
+            decl match {
                 case VarDef(id, value) => 
                     if (curFn == "") globalMem += (id.name -> eval(value, globalMem))
                     else fnEnv(curFn).env += (id.name -> eval(value, env))
+                case ConstDef(id, value) =>
+                    
                 case FnDef(typ, id, args, bod) =>
-                    fnEnv += (id.name -> Closure(typ, None, args, bod, env, curFn))
-                case ExprAsStmt(expr) => eval(expr, env)
-                case _ => println("Broken")
+                    fnEnv += (id.name -> Closure(typ, None, args, bod, env, curFn))        
             }
         }
         

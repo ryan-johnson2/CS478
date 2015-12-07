@@ -6,10 +6,6 @@ object Interpreter {
         // Parser packages programs in a function with an empty name, so we don't need any global memory
         type Env = Map[String, Location]
         
-        class Location(value: Value) {
-            var contents = value
-        }
-        
         //for testing only
         var testRet = List.empty[Any]
 
@@ -40,26 +36,23 @@ object Interpreter {
             case POr(left, right) => BoolVal(evalBool(expr, env))
             case PAnd(left, right) => BoolVal(evalBool(expr, env))
             case PNot(bool) => BoolVal(evalBool(expr, env))
-            case Ident(name) => val item = env.getOrElse(name, throw new Exception("Unassigned variable"))
+            case Ident(name) => env.getOrElse(name, throw new Exception("Unassigned variable")).get
             case FnCall(id, args) =>
-                val params = fnEnv(id.name).params
-                //val parentIsGlobal = (fnEnv(id.name).parent == "")
-                var cbvrMap = Map.empty[String, String] // All these values will be strings
-                if (args.size != params.size) throw new Exception("Incorrect number of parameters!")
-                
-                val inputs = args.zip(params)
-                
-                for (input <- inputs) {
-                    val (arg, param) = input
+                val inputs = args.zip(env(id.name).get.params)
+                if (args.size != params.size) throw new Exception("Incorrect number of parameters!")                
+                for ((arg, param) <- inputs) {
                     val argVal = eval(arg.expr, env)
                     if (!(matchType(argVal, param._2))) throw new Exception("Types don't match!")
-                    else {
-                        fnEnv(id.name).env += (param._1.name -> arg)
-                        if (arg.cbvr)
-                            cbvrMap += (param._1.name -> getArgName(arg))
-                    }                
+                    else env(id.name).get.env += (param._1.name -> arg)
                 }
-                
+                exec(env(id.name).get.body, id.name)
+                val returnVal = fnEnv(id.name).retVal
+                if (returnVal != None) returnVal.get
+                else VoidVal
+            case _ => throw new Exception("Not a valid expression")   
+            
+                // var cbvrMap = Map.empty[String, String] // All these values will be strings
+                //val parentIsGlobal = (fnEnv(id.name).parent == "")
                 /* for (i <- 0 until args.size) {
                     val argExpr = args(i).expr; val argIsCBVR = args(i).cbvr
                     val argi = eval(argExpr, env)
@@ -71,15 +64,14 @@ object Interpreter {
                             cbvrMap += (parami._1.name -> getArgName(args(i)))
                     }
                 } */
-                exec(fnEnv(id.name).body, id.name)
-                for ((param, argName) <- cbvrMap) {
-                    if (parentIsGlobal) globalMem += (argName -> fnEnv(id.name).env(param))
-                    else fnEnv(fnEnv(id.name).parent).env += (argName -> fnEnv(id.name).env(param))
-                } // Changes parent variables to those determined in the function; call by value result
-                val returnVal = fnEnv(id.name).retVal // Also copy-in-left, incidentally
-                if (returnVal != None) returnVal.get
-                else VoidVal
-            case _ => throw new Exception("Not a valid expression")
+                //exec(env(id.name).get.body, id.name)
+                //for ((param, argName) <- cbvrMap) {
+                //    if (parentIsGlobal) globalMem += (argName -> fnEnv(id.name).env(param))
+                //    else fnEnv(fnEnv(id.name).parent).env += (argName -> fnEnv(id.name).env(param))
+                //} // Changes parent variables to those determined in the function; call by value result
+                //val returnVal = fnEnv(id.name).retVal
+                //if (returnVal != None) returnVal.get
+                //else VoidVal
         }
 
         def evalNum(expr: Expr, env: Env): Int = expr match {
@@ -99,7 +91,6 @@ object Interpreter {
                 case IntVal(n) => n
                 case _ => throw new Exception("Not a num variable")
             }
-
             case _ => throw new Exception("Not a valid num expression")
         }
 
@@ -109,8 +100,8 @@ object Interpreter {
             case PLT(left, right) => evalNum(left, env) < evalNum(right, env)
             case PGTE(left, right) => evalNum(left, env) >= evalNum(right, env)
             case PLTE(left, right) => evalNum(left, env) <= evalNum(right, env)
-            case PEqual(left, right) => evalNum(left, env) == evalNum(right, env)
-            case PNotEqual(left, right) => evalNum(left, env) != evalNum(right, env)
+            case PEqual(left, right) => eval(left, env) == eval(right, env)
+            case PNotEqual(left, right) => eval(left, env) != eval(right, env)
             case POr(left, right) => evalBool(left, env) || evalBool(right, env)
             case PAnd(left, right) => evalBool(left, env) && evalBool(right, env)
             case PNot(bool) => !evalBool(bool, env)
@@ -127,6 +118,10 @@ object Interpreter {
         
         def evalStr(expr: Expr, env: Env): String = expr match {
             case Str(s) => s
+            case FnCall(id, args) => eval(expr, env) match {
+                case StrVal(s) => s
+                case _ => throw new Exception("Not a str variable")
+            }
             case _ => throw new Exception("Not a valid string expression")
         }
         

@@ -10,13 +10,9 @@ sealed trait Token
 //AST
 sealed trait Expr
 sealed trait Stmt
+sealed trait Decl
 sealed trait Type
 
-//Evaluation
-sealed trait Value
-
-//Interpretation
-sealed trait Location
 /*-----------*/
 /*  Tokens   */
 /*-----------*/
@@ -109,9 +105,11 @@ case class Body(stuff: List[Stmt]) extends Stmt
 case class While(cond: Expr, bod: Stmt) extends Stmt
 case class For(dec: Stmt, cond: Expr, count: Stmt, bod: Stmt) extends Stmt
 case class If(cond: Expr, bod: Stmt, pElse: Option[Stmt])  extends Stmt
-case class VarDef(id: Ident, value: Expr) extends Stmt
-case class FnDef(typ: Type, id: Ident, args: List[(Ident, Type)], bod: Stmt) extends Stmt
 case class ExprAsStmt(expr: Expr) extends Stmt
+
+//Declarations
+case class VarDef(id: Ident, value: Expr) extends Decl
+case class FnDef(typ: Type, id: Ident, args: List[(Ident, Type)], bod: Stmt) extends Decl
 
 //Arguments
 case class Argument(expr: Expr, cbvr: Boolean)
@@ -120,6 +118,12 @@ case class Argument(expr: Expr, cbvr: Boolean)
 /*  Eval Types  */
 /*--------------*/
 
+//Evaluation
+sealed trait Value
+
+//Interpretation
+sealed trait Location
+
 //Values
 case class IntVal(n: Int) extends Value
 case class BoolVal(b: Boolean) extends Value
@@ -127,4 +131,17 @@ case class StrVal(s: String) extends Value
 case object VoidVal extends Value
 
 //Closure
-case class Closure(retType: Type, var retVal: Option[Value], params: List[(Ident, Type)], body: Stmt, var env: Map[String, Value], parent: Ident) extends Value
+case class Closure(retType: Type, var retVal: Option[Value], params: List[(Ident, Type)], body: Stmt, var env: Map[String, Location], parent: Ident) extends Value
+
+//Location
+class Location(value: Value, const: Boolean = false) {
+    private var contents = value
+    val isConst = const
+    def get: Value = contents
+    def set(newVal: Value) {
+        if (!isConst)
+            contents = newVal
+        else
+            throw new Exception("Can't change a constant!")
+    }
+}

@@ -2,11 +2,9 @@ package lang
 
 object Interpreter {
 
-    def interpret(stmt: Stmt) = {
-        // Parser packages programs in a function with an empty name, so we don't need any global memory
-        type Env = Map[String, Location]
-        
-        //for testing only
+    def interpret(prog: Prog) = {
+        //Parser packages programs in a function with an empty name, so we don't need any global memory
+        //For testing only
         var testRet = List.empty[Any]
 
         def matchType(value: Value, typ: Type): Boolean = value match {
@@ -130,7 +128,7 @@ object Interpreter {
             case _ => throw new Exception("Not a candidate for CBVR")
         }
 
-        def exec(stmt: Stmt, env: Env): Unit = {
+        def exec(stmt: Stmt, env: Env): Env = {
             stmt match {
                 case Ret(expr) => // Change to use exceptions
                     val ans = eval(expr, env)
@@ -167,13 +165,14 @@ object Interpreter {
                     }
                     else if (env.get(id.name) != None) fnEnv(curFn).env += (id.name -> eval(value, env))
                     else throw new Exception(id.name + " not in current environment!")
+                    
 
                 case ExprAsStmt(expr) => eval(expr, env)
                 case _ => println("Broken")
             }
         }
         
-        def declare(decl: Decl, env: Env): Unit = {
+        def declare(decl: Decl, env: Env): Env = {
             decl match {
                 case VarDef(id, value) => 
                     if (curFn == "") globalMem += (id.name -> eval(value, globalMem))
@@ -181,11 +180,13 @@ object Interpreter {
                 case ConstDef(id, value) =>
                     
                 case FnDef(typ, id, args, bod) =>
-                    fnEnv += (id.name -> Closure(typ, None, args, bod, env, curFn))        
+                    fnEnv += (id.name -> Closure(typ, None, args, bod, env, curFn))
+                case _ => println("Uh oh")
             }
         }
         
-        exec(stmt, "")
+        val mainEnv = declare(prog.def, Map.empty[String, Location])
+        exec(prog.call, mainEnv)
         testRet.reverse
     }
 }

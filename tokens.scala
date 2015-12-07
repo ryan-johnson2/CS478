@@ -8,10 +8,11 @@ package lang
 sealed trait Token
 
 //AST
+sealed trait Type
 sealed trait Expr
 sealed trait Stmt
 sealed trait Decl
-sealed trait Type
+sealed trait Prog
 
 /*-----------*/
 /*  Tokens   */
@@ -22,7 +23,6 @@ case object AndTok extends Token     // and
 case object OrTok extends Token      // or
 case object NotTok extends Token     // not
 case object IfTok extends Token      // if
-case object ElifTok extends Token    // elif
 case object ElseTok extends Token    // else 
 case object ForTok extends Token     // for
 case object WhileTok extends Token   // while
@@ -112,8 +112,8 @@ case class VarDef(id: Ident, value: Expr) extends Decl
 case class ConstDef(id: Ident, value: Expr) extends Decl
 case class FnDef(typ: Type, id: Ident, args: List[Argument], bod: Stmt) extends Decl
 
-//Arguments
-case class Argument(ident: Ident, typ: Type, cbvr: Boolean = false)
+//Programs
+case class Prog(def: FnDef, call: FnCall) extends Prog
 
 /*--------------*/
 /*  Eval Types  */
@@ -131,8 +131,14 @@ case class BoolVal(b: Boolean) extends Value
 case class StrVal(s: String) extends Value 
 case object VoidVal extends Value
 
+//Environment
+type Env = Map[String, Location]
+
+//Arguments
+case class Argument(ident: Ident, typ: Type, cbvr: Boolean = false)
+
 //Closure
-case class Closure(retType: Type, var retVal: Option[Value], params: List[(Ident, Type)], body: Stmt, var env: Map[String, Location], parent: Ident) extends Value
+case class Closure(retType: Type, var retVal: Option[Value], params: List[Argument], body: Stmt, var env: Env, parent: Ident) extends Value
 
 //Location
 class Location(value: Value, const: Boolean = false) {

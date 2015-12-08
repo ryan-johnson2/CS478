@@ -5,6 +5,8 @@ object Interpreter {
     def interpret(prog: Prog) = {
         //Parser packages programs in a function with an empty name, so we don't need any global memory
         //For testing only
+        type Env = [String, Location]
+        
         var testRet = List.empty[Any]
 
         def matchType(value: Value, typ: Type): Boolean = value match {
@@ -43,7 +45,12 @@ object Interpreter {
                     if (!(matchType(argVal, param._2))) throw new Exception("Types don't match!")
                     else env(id.name).get.env += (param._1.name -> arg)
                 }
-                exec(env(id.name).get.body, id.name)
+                try {exec(env(id.name).get.body, id.name)}
+                catch {
+                    case (_: ReturnValue) => 
+                }
+                
+                
                 val returnVal = fnEnv(id.name).retVal
                 if (returnVal != None) returnVal.get
                 else VoidVal
@@ -158,35 +165,24 @@ object Interpreter {
                     if (evalBool(cond, env))
                         exec(body, curFn)
                     else for (elseStmt <- pElse) exec(elseStmt, curFn)
-                case Assign(id, value) => 
-                    if (curFn == "") {
-                        if (globalMem.get(id.name) != None) globalMem += (id.name -> eval(value, globalMem))
-                        else throw new Exception(id.name + " not in global memory!")
-                    }
-                    else if (env.get(id.name) != None) fnEnv(curFn).env += (id.name -> eval(value, env))
-                    else throw new Exception(id.name + " not in current environment!")
-                    
-
+                case Assign(id, value) =>
+                    val curVal = env.getOrElse(id, throw new Exception(id + " not defined!").get
+                    if (curVal.isConst) throw new Exception("Cannot assign constant variable " + id)
+                    else env(id).set(eval(value, env))
+                case VarDef(id, value) =>
+                    env += (id.name -> new Location(eval(value, env)))
+                case ConstDef(id, value) =>
+                    env += (id.name -> new Location(eval(value, env), true))
+                case FnDef(typ, id, args, bod) =>
+                    env += (id.name -> Closure(typ, None, args, bod, env, curFn))
                 case ExprAsStmt(expr) => eval(expr, env)
                 case _ => println("Broken")
             }
+            env
         }
         
-        def declare(decl: Decl, env: Env): Env = {
-            decl match {
-                case VarDef(id, value) => 
-                    if (curFn == "") globalMem += (id.name -> eval(value, globalMem))
-                    else fnEnv(curFn).env += (id.name -> eval(value, env))
-                case ConstDef(id, value) =>
-                    
-                case FnDef(typ, id, args, bod) =>
-                    fnEnv += (id.name -> Closure(typ, None, args, bod, env, curFn))
-                case _ => println("Uh oh")
-            }
-        }
-        
-        val mainEnv = declare(prog.def, Map.empty[String, Location])
-        exec(prog.call, mainEnv)
+        val mainEnv = exec(prog.fndef, Map.empty[String, Location])
+        exec(prog.fncall, mainEnv)
         testRet.reverse
     }
 }

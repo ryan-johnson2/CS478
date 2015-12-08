@@ -11,7 +11,6 @@ sealed trait Token
 sealed trait Type
 sealed trait Expr
 sealed trait Stmt
-sealed trait Decl
 sealed trait Prog
 
 /*-----------*/
@@ -61,6 +60,7 @@ case object EqualTok extends Token       // ==
 case object NotEqualTok extends Token    // !=
 case object CommaTok extends Token       // ,
 case object ColonTok extends Token       // :
+case object ConstTok extends Token       // `
 case object EndOfInputTok extends Token  //
 
 //Types
@@ -108,8 +108,8 @@ case class If(cond: Expr, bod: Stmt, pElse: Option[Stmt])  extends Stmt
 case class ExprAsStmt(expr: Expr) extends Stmt
 
 //Declarations
-case class VarDef(id: Ident, value: Expr) extends Stmt
-case class ConstDef(id: Ident, value: Expr) extends Stmt
+case class VarDef(typ: Type, id: Ident, value: Expr) extends Stmt
+case class ConstDef(typ: Type, id: Ident, value: Expr) extends Stmt
 case class FnDef(typ: Type, id: Ident, args: List[Argument], bod: Stmt) extends Stmt
 
 //Programs

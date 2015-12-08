@@ -77,6 +77,7 @@ object Scanner {
             else if (c == '%') ModTok +: scan(i + 1)
             else if (c == ',') CommaTok +: scan(i + 1)
             else if (text.startsWith("!=")) NotEqualTok +: scan(i+2)
+            else if (c == '`') ConstTok +: scan(i + 1)
 
             //creates token for a string literal
             else if (c == '"') {

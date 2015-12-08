@@ -61,6 +61,9 @@ object ExprParser extends parsing.Parsers[Token] {
 
     def pFuncCall: Parser[Expr] = 
         Ident(n) ~ '(' ~ (pExpr7 ~ (',' ~ pExpr7).*).? ~ ')' ~ ';' ^^ { 
-            case Ident(n) ~ _ list ~ _ ~ _ => FnCall(Ident(n), list) 
+            case Ident(n) ~ _ opt ~ _ ~ _ => opt match {
+                case Some(list) => FnCall(Ident(n), list) 
+                case _ => FnCall(Ident(n), list.empty[Expr])
+            }
         }
 }

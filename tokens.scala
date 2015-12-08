@@ -108,9 +108,9 @@ case class If(cond: Expr, bod: Stmt, pElse: Option[Stmt])  extends Stmt
 case class ExprAsStmt(expr: Expr) extends Stmt
 
 //Declarations
-case class VarDef(id: Ident, value: Expr) extends Decl
-case class ConstDef(id: Ident, value: Expr) extends Decl
-case class FnDef(typ: Type, id: Ident, args: List[Argument], bod: Stmt) extends Decl
+case class VarDef(id: Ident, value: Expr) extends Stmt
+case class ConstDef(id: Ident, value: Expr) extends Stmt
+case class FnDef(typ: Type, id: Ident, args: List[Argument], bod: Stmt) extends Stmt
 
 //Programs
 case class Prog(def: FnDef, call: FnCall) extends Prog

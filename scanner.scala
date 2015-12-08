@@ -34,7 +34,6 @@ object Scanner {
                     case "for" => ForTok +: scan(i)
                     case "not" => NotTok +: scan(i)
                     case "void" => VoidType +: scan(i)
-                    case "elif" => ElifTok +: scan(i)
                     case "else" => ElseTok +: scan(i)      
                     case "while" => WhileTok +: scan(i)
                     case "return" => ReturnTok +: scan(i)

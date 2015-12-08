@@ -11,7 +11,7 @@ object ExprParser extends parsing.Parsers[Token] {
         pExpr7 
 
     def pExpr0: Parser[Expr] = 
-        pExpr0 ~ ExpTok ~ pExpr ^^ { case expr1 ~ _ ~ expr2 => Expon{expr1, expr2) } |
+        pExpr0 ~ ExpTok ~ pExpr ^^ { case expr1 ~ _ ~ expr2 => Expon(expr1, expr2) } |
         pExpr
 
     def pExpr1: Parser[Expr] =
@@ -60,9 +60,9 @@ object ExprParser extends parsing.Parsers[Token] {
         Ident(name) ^^ { case ident => ident }
 
     def pFuncCall: Parser[Expr] = 
-        Ident(n) ~ '(' ~ (pExpr7 ~ (',' ~ pExpr7).*).? ~ ')' ~ ';' ^^ { 
-            case Ident(n) ~ _ opt ~ _ ~ _ => opt match {
-                case Some(list) => FnCall(Ident(n), list) 
+        Ident(n) ~ LParenTok ~ (pExpr7 ~ (CommaTok ~ pExpr7).*).? ~ RParenTok ~ SemiColTok ^^ { 
+            case ident ~ _ ~ opt ~ _ ~ _ => opt match {
+                case Some(list) => FnCall(ident, list) 
                 case _ => FnCall(Ident(n), list.empty[Expr])
             }
         }

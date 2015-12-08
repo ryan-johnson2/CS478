@@ -32,7 +32,7 @@ object StmtParser extends parsing.Parsers[Token] {
 
     def pIf: Parser[Stmt] =
         IfTok ~ LParenTok ~ ExprParser.pExpr ~ RParenTok ~ pBody ~ (ElseTok ~ pBody).? ^^ {
-            case _ ~ _ ~ expr1 ~ _ ~ body1 ~ list ~ opt => If (expr1, body1, list, opt)
+            case _ ~ _ ~ expr1 ~ _ ~ body1 ~ opt => If (expr1, body1, opt)
         }
 
     def pBody: Parser[Stmt] = 

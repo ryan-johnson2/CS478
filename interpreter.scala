@@ -2,11 +2,9 @@ package lang
 
 object Interpreter {
 
-    def interpret(stmt: Stmt) = {
-        // Parser packages programs in a function with an empty name, so we don't need any global memory
-        type Env = Map[String, Location]
-        
-        //for testing only
+    def interpret(prog: Prog) = {
+        //Parser packages programs in a function with an empty name, so we don't need any global memory
+        //For testing only
         var testRet = List.empty[Any]
 
         def matchType(value: Value, typ: Type): Boolean = value match {
@@ -130,10 +128,9 @@ object Interpreter {
             case _ => throw new Exception("Not a candidate for CBVR")
         }
 
-        def exec(stmt: Stmt, curFn: String): Unit = {
-            var env = if (!(curFn == "")) fnEnv(curFn).env else globalMem
+        def exec(stmt: Stmt, env: Env): Env = {
             stmt match {
-                case Ret(expr) => 
+                case Ret(expr) => // Change to use exceptions
                     val ans = eval(expr, env)
                     ans match {
                         case BoolVal(b) => 
@@ -168,17 +165,28 @@ object Interpreter {
                     }
                     else if (env.get(id.name) != None) fnEnv(curFn).env += (id.name -> eval(value, env))
                     else throw new Exception(id.name + " not in current environment!")
-                case VarDef(id, value) => 
-                    if (curFn == "") globalMem += (id.name -> eval(value, globalMem))
-                    else fnEnv(curFn).env += (id.name -> eval(value, env))
-                case FnDef(typ, id, args, bod) =>
-                    fnEnv += (id.name -> Closure(typ, None, args, bod, env, curFn))
+                    
+
                 case ExprAsStmt(expr) => eval(expr, env)
                 case _ => println("Broken")
             }
         }
         
-        exec(stmt, "")
+        def declare(decl: Decl, env: Env): Env = {
+            decl match {
+                case VarDef(id, value) => 
+                    if (curFn == "") globalMem += (id.name -> eval(value, globalMem))
+                    else fnEnv(curFn).env += (id.name -> eval(value, env))
+                case ConstDef(id, value) =>
+                    
+                case FnDef(typ, id, args, bod) =>
+                    fnEnv += (id.name -> Closure(typ, None, args, bod, env, curFn))
+                case _ => println("Uh oh")
+            }
+        }
+        
+        val mainEnv = declare(prog.def, Map.empty[String, Location])
+        exec(prog.call, mainEnv)
         testRet.reverse
     }
 }

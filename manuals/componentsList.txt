@@ -1,0 +1,33 @@
+Components:
+
+Basic Components
+Basic types: String, Int, Boolean 
+- Fully Working
+Math and logic operations
+- Fully Working
+Statements: if, while, for, assign, print, return
+- Fully Working
+Variables: delcarations, assignments, uses
+- Fully Working
+Functions: declarations, calls, CBV, CBR, recursion
+- Fully Working (except call by value reference)
+Static Scope
+- Fully Working (as far as we can tell)
+Syntax
+- Fully Working (included in CFG)
+
+Final Features:
+Arrays
+- Can be scanned and parsed, not interpreted
+Mutual Recursion
+- Fully Working
+Record Types
+- Vaporware
+Typechecker
+- Done by interpreter
+Reference Manual
+- Included in CFG
+
+Extra Feature:
+Pattern Matching
+- Can be scanned and parsed, not interpreted

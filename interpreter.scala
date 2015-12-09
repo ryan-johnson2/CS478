@@ -4,13 +4,7 @@ object Interpreter {
 
     def interpret(body: Prog) = {
         //Parser packages programs in a function with an empty name, so we don't need any global memory
-        //For testing only
-        //Reserved: RETURN, maps to current return value
         type Env = Map[String, Location]
-        
-        case class ReturnInt(retInt: String) extends Exception(retInt)
-        case class ReturnBool(retBool: String) extends Exception(retBool)
-        case class ReturnStr(retStr: String) extends Exception(retStr)
         
         var testRet = List.empty[Any]
 
@@ -43,12 +37,8 @@ object Interpreter {
             case Not(bool) => BoolVal(evalBool(expr, env))
             case Ident(name) => env.getOrElse(name, throw new Exception("Unassigned variable")).get
             case FnCall(id, args) =>
-                //println("Function call to " + id.name)
-                //println(env)
                 env(id.name).get match {
                     case Closure(retType, params, body, fnEnv, parent) =>
-                        
-                        //var curEnv = fnEnv
                         var curEnv = Map.empty[String, Location]
                         val inputs = args.zip(params)
                         if (args.size != params.size) throw new Exception("Incorrect number of parameters!")                
@@ -57,16 +47,11 @@ object Interpreter {
                                 case Ident(s) => s; 
                                 case _ => throw new Exception("NOPE TRY AGAIN")
                             }
-                            //println(arg)
                             val argVal = eval(arg, env)
                             if (!(matchType(argVal, param.typ))) throw new Exception("Types don't match!")
                             else curEnv += (paramName -> new Location(argVal))
                         }
-                        //val execEnv = env + (id.name -> new Location(Closure(retType, params, body, curEnv, parent)))
-                        
                         val execEnv = env ++ curEnv
-                        //println("Function environment")
-                        //println(execEnv)
                         try {exec(body, execEnv, id.name)}
                         catch {
                             case e: ReturnInt => return IntVal(e.getMessage.toInt)
@@ -158,8 +143,7 @@ object Interpreter {
                         env = exec(count, env, curFn)
                     }
                 case If(cond, body, pElse) =>
-                    if (evalBool(cond, env))
-                        env = exec(body, env, curFn)
+                    if (evalBool(cond, env)) env = exec(body, env, curFn)
                     else for (elseStmt <- pElse) env = exec(elseStmt, env, curFn)
                 case Assign(id, value) => id match {
                     case Ident(s) => env.getOrElse(s, throw new Exception(id + " not defined!")).set(eval(value, env))
@@ -172,14 +156,10 @@ object Interpreter {
                     case _ => throw new Exception("NO")}                    
                 case FnDef(typ, id, args, bod) => id match {
                     case Ident(s) => 
-                    //val newEnv = env + (s -> new Location(Closure(typ, args, bod, env, curFn)))
                     env += (s -> new Location(Closure(typ, args, bod, env, curFn)))
                     case _ => throw new Exception("NO")} 
                 case ExprAsStmt(expr) => eval(expr, env)
-                case Print(d) => 
-                    //println("Print environment")
-                    //println(env)
-                    //println()
+                case Print(d) =>
                     val ans = eval(d, env)
                     println(ans)
                 case _ => println("Broken")

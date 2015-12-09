@@ -43,12 +43,11 @@ object Interpreter {
             case Not(bool) => BoolVal(evalBool(expr, env))
             case Ident(name) => env.getOrElse(name, throw new Exception("Unassigned variable")).get
             case FnCall(id, args) =>
-                println("Function call to " + id.name)
-                println(env)
+                //println("Function call to " + id.name)
+                //println(env)
                 env(id.name).get match {
                     case Closure(retType, params, body, fnEnv, parent) =>
-                        println("Function environment")
-                        println(fnEnv)
+                        
                         //var curEnv = fnEnv
                         var curEnv = Map.empty[String, Location]
                         val inputs = args.zip(params)
@@ -58,12 +57,16 @@ object Interpreter {
                                 case Ident(s) => s; 
                                 case _ => throw new Exception("NOPE TRY AGAIN")
                             }
-                            val argVal = eval(arg, fnEnv)
+                            //println(arg)
+                            val argVal = eval(arg, env)
                             if (!(matchType(argVal, param.typ))) throw new Exception("Types don't match!")
                             else curEnv += (paramName -> new Location(argVal))
                         }
                         //val execEnv = env + (id.name -> new Location(Closure(retType, params, body, curEnv, parent)))
+                        
                         val execEnv = env ++ curEnv
+                        //println("Function environment")
+                        //println(execEnv)
                         try {exec(body, execEnv, id.name)}
                         catch {
                             case e: ReturnInt => return IntVal(e.getMessage.toInt)
@@ -169,14 +172,14 @@ object Interpreter {
                     case _ => throw new Exception("NO")}                    
                 case FnDef(typ, id, args, bod) => id match {
                     case Ident(s) => 
-                    val newEnv = env + (s -> new Location(Closure(typ, args, bod, env, curFn)))
-                    env += (s -> new Location(Closure(typ, args, bod, newEnv, curFn)))
+                    //val newEnv = env + (s -> new Location(Closure(typ, args, bod, env, curFn)))
+                    env += (s -> new Location(Closure(typ, args, bod, env, curFn)))
                     case _ => throw new Exception("NO")} 
                 case ExprAsStmt(expr) => eval(expr, env)
                 case Print(d) => 
-                    println("Print environment")
-                    println(env)
-                    println()
+                    //println("Print environment")
+                    //println(env)
+                    //println()
                     val ans = eval(d, env)
                     println(ans)
                 case _ => println("Broken")

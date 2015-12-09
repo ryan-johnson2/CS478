@@ -150,3 +150,7 @@ class Location(value: Value, const: Boolean = false) {
             throw new Exception("Can't change a constant!")
     }
 }
+
+case class ReturnInt(retInt: String) extends Exception(retInt)
+case class ReturnBool(retBool: String) extends Exception(retBool)
+case class ReturnStr(retStr: String) extends Exception(retStr)

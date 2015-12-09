@@ -12,9 +12,10 @@ object Parser extends parsing.Parsers[Token] {
 
     def pExpr: Parser[Expr] =
         pFuncCall |
+        pPattern |
         pIdent |
         pLiteral |
-        pArray|
+        pArray |
         LParenTok ~ pExpr7 ~ RParenTok ^^ { case _ ~ expr ~ _ => expr }
 
     def pExpr0: Parser[Expr] = 
@@ -128,6 +129,16 @@ object Parser extends parsing.Parsers[Token] {
             case _ => throw new Exception("LOL BROKEN")
         }
     }
+
+    def pPattern: Parser[Expr] = 
+        MatchTok ~ pExpr7 ~ LCurlTok ~ pCase.+ ~ RCurlTok ^^ {
+            case _ ~ expr1 ~ _ ~ cases ~ _ => Pattern(expr1, cases)
+        }
+
+    def pCase: Parser[Case] = 
+        CaseTok ~ pExpr7 ~ ArrowTok ~ pExpr7 ~ SemiColTok ^^ {
+            case _ ~ expr1 ~ _ ~ expr2 ~ _ => Case(expr1, expr2)
+        }
 
     // Parse Statements
     def pStmt: Parser[Stmt] = 

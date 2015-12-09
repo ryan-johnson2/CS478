@@ -61,6 +61,7 @@ case object CommaTok extends Token       // ,
 case object ColonTok extends Token       // :
 case object PrintTok extends Token
 case object ArrayTok extends Token
+case object ArrowTok extends Token 
 
 //Types
 case object NumType extends Token with Type
@@ -98,6 +99,8 @@ case class And(left: Expr, right: Expr) extends Expr
 case class Not(expr: Expr) extends Expr
 case class Neg(expr: Expr) extends Expr
 case class FnCall(id: Ident, args: List[Expr]) extends Expr
+case class Pattern(itm: Expr, cases: List[Case]) extends Expr
+case class Case(valu: Expr, retVal: Expr)
 
 
 //Statements

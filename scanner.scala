@@ -44,12 +44,15 @@ object Scanner {
                     case "false" => Bool(false) +: scan(i)
                     case "print" => PrintTok +: scan(i)
                     case "array" => ArrayTok +: scan(i)
+                    case "match" => MatchTok +: scan(i)
+                    case "case" => CaseTok +: scan(i)
                     case _ => Ident(strt) +: scan(i)
                 }                
             }
 
             //Deal with symbols
             else if (str.startsWith("==")) EqualTok +: scan(i+2)
+            else if (str.startsWith("=>")) ArrowTok +: scan(i+2)
             else if (c == '=') AssgnTok +: scan(i + 1)
             else if (str.startsWith("<=")) LTEqTok +: scan(i+2)
             else if (c == '<') LTTok +: scan(i + 1)

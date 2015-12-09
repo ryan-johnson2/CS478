@@ -65,6 +65,7 @@ object Interpreter {
                         }
                         //val execEnv = env + (id.name -> new Location(Closure(retType, params, body, curEnv, parent)))
                         val execEnv = env ++ curEnv
+                        println("Exec Env: \n" + execEnv)
                         try {exec(body, execEnv, id.name)}
                         catch {
                             case e: ReturnInt => return IntVal(e.getMessage.toInt)

@@ -49,7 +49,8 @@ object Interpreter {
                     case Closure(retType, params, body, fnEnv, parent) =>
                         println("Function environment")
                         println(fnEnv)
-                        var curEnv = env
+                        var curEnv = fnEnv
+                        
                         val inputs = args.zip(params)
                         if (args.size != params.size) throw new Exception("Incorrect number of parameters!")                
                         for ((arg, param) <- inputs) {
@@ -61,7 +62,8 @@ object Interpreter {
                             if (!(matchType(argVal, param.typ))) throw new Exception("Types don't match!")
                             else curEnv += (paramName -> new Location(argVal))
                         }
-                        try {exec(body, curEnv, id.name)}
+                        val execEnv = env + (id.name -> new Location(Closure(retType, params, body, curEnv, parent)))
+                        try {exec(body, execEnv, id.name)}
                         catch {
                             case e: ReturnInt => return IntVal(e.getMessage.toInt)
                             case e: ReturnBool => return BoolVal(e.getMessage.toBoolean)

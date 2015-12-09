@@ -59,7 +59,7 @@ case object EqualTok extends Token       // ==
 case object NotEqualTok extends Token    // !=
 case object CommaTok extends Token       // ,
 case object ColonTok extends Token       // :
-case object EndOfInputTok extends Token  //
+case object PrintTok extends Token
 
 //Types
 case object NumType extends Token with Type
@@ -96,6 +96,7 @@ case class Not(expr: Expr) extends Expr
 case class Neg(expr: Expr) extends Expr
 case class FnCall(id: Ident, args: List[Expr]) extends Expr
 
+
 //Statements
 case class Assign(id: Expr, expr: Expr) extends Stmt
 case class Ret(expr: Expr) extends Stmt
@@ -104,6 +105,7 @@ case class While(cond: Expr, bod: Stmt) extends Stmt
 case class For(dec: Stmt, cond: Expr, count: Stmt, bod: Stmt) extends Stmt
 case class If(cond: Expr, bod: Stmt, pElse: Option[Stmt])  extends Stmt
 case class ExprAsStmt(expr: Expr) extends Stmt
+case class Print(data: Expr) extends Stmt
 
 //Declarations
 case class VarDef(typ: Type, id: Expr, expr: Expr) extends Stmt

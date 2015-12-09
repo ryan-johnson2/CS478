@@ -59,9 +59,9 @@ object Interpreter {
                         }
                         try {exec(body, curEnv, id.name)}
                         catch {
-                            case e: ReturnInt => IntVal(e.getMessage.toInt)
-                            case e: ReturnBool => BoolVal(e.getMessage.toBoolean)
-                            case e: ReturnStr => StrVal(e.getMessage)                    
+                            case e: ReturnInt => return IntVal(e.getMessage.toInt)
+                            case e: ReturnBool => return BoolVal(e.getMessage.toBoolean)
+                            case e: ReturnStr => return StrVal(e.getMessage)                    
                         }
                         VoidVal
                     case _ => throw new Exception("Not a function!")
@@ -164,6 +164,9 @@ object Interpreter {
                     case Ident(s) => env += (s -> new Location(Closure(typ, args, bod, env, curFn)))
                     case _ => throw new Exception("NO")} 
                 case ExprAsStmt(expr) => eval(expr, env)
+                case Print(d) => 
+                    val ans = eval(d, env)
+                    println(ans)
                 case _ => println("Broken")
             }
             env

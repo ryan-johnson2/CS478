@@ -42,6 +42,7 @@ object Scanner {
                     case "boolean" => BoolType +: scan(i)
                     case "true" => Bool(true) +: scan(i)
                     case "false" => Bool(false) +: scan(i)
+                    case "print" => PrintTok +: scan(i)
                     case _ => Ident(strt) +: scan(i)
                 }                
             }

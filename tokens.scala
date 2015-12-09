@@ -97,7 +97,7 @@ case class Neg(expr: Expr) extends Expr
 case class FnCall(id: Ident, args: List[Expr]) extends Expr
 
 //Statements
-case class Assign(id: Ident, expr: Expr) extends Stmt
+case class Assign(id: Expr, expr: Expr) extends Stmt
 case class Ret(expr: Expr) extends Stmt
 case class Body(stuff: List[Stmt]) extends Stmt
 case class While(cond: Expr, bod: Stmt) extends Stmt
@@ -106,9 +106,9 @@ case class If(cond: Expr, bod: Stmt, pElse: Option[Stmt])  extends Stmt
 case class ExprAsStmt(expr: Expr) extends Stmt
 
 //Declarations
-case class VarDef(typ: Type, id: Ident, expr: Expr) extends Stmt
-case class ConstDef(typ: Type, id: Ident, expr: Expr) extends Stmt
-case class FnDef(typ: Type, id: Ident, args: List[Argument], bod: Stmt) extends Stmt
+case class VarDef(typ: Type, id: Expr, expr: Expr) extends Stmt
+case class ConstDef(typ: Type, id: Expr, expr: Expr) extends Stmt
+case class FnDef(typ: Type, id: Expr, args: List[Argument], bod: Stmt) extends Stmt
 
 //Programs
 case class Prog(fndef: FnDef, fncall: FnCall)
@@ -127,7 +127,7 @@ case class StrVal(s: String) extends Value
 case object VoidVal extends Value
 
 //Arguments
-case class Argument(ident: Ident, typ: Type, cbvr: Boolean = false)
+case class Argument(ident: Expr, typ: Type, cbvr: Boolean = false)
 
 //Closure
 case class Closure(retType: Type, var retVal: Option[Value], params: List[Argument], body: Stmt, var env: Map[String, Location], parent: Ident) extends Value

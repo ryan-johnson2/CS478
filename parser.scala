@@ -14,6 +14,7 @@ object Parser extends parsing.Parsers[Token] {
         pFuncCall |
         pIdent |
         pLiteral |
+        pArray|
         LParenTok ~ pExpr7 ~ RParenTok ^^ { case _ ~ expr ~ _ => expr }
 
     def pExpr0: Parser[Expr] = 
@@ -85,6 +86,15 @@ object Parser extends parsing.Parsers[Token] {
                 case _ => FnCall(tok2ident(ident) , List.empty[Expr])
             }
         }
+
+    def pArray: Parser[Expr] =
+        ArrayTok ~ LParenTok ~ (pExpr7 ~ (CommaTok ~ pExpr7).*).? ~ RParenTok ^^ { case _ ~ _ ~ opt ~ _ =>
+            opt match {
+                case Some(list) => Arr(Some(list._1 +: list._2.map(_._2)))
+                case _ => Arr(None)       
+            }
+        }
+
 
     def tok2expr(tok: Token): Expr = tok match {
         case Str(s) => Str(s)
@@ -182,7 +192,11 @@ object Parser extends parsing.Parsers[Token] {
         NumType ^^ { case num => tok2type(num) } |
         StrType ^^ { case str => tok2type(str) } |
         BoolType ^^ { case bool => tok2type(bool) } |
-        VoidType ^^ { case void => tok2type(void) } 
+        VoidType ^^ { case void => tok2type(void) } |
+        pArrayType
+
+    def pArrayType: Parser[Type] = 
+        ArrayTok ~ LSquareTok ~ pType ~ RSquareTok ^^ { case _ ~ _  ~ typ ~ _ => ArrayType(typ) }
 
     def pVarDef: Parser[Stmt] =
         pType ~ pIdent ~ AssgnTok ~ pExpr7 ~ SemiColTok ^^ {

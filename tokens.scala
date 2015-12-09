@@ -60,18 +60,21 @@ case object NotEqualTok extends Token    // !=
 case object CommaTok extends Token       // ,
 case object ColonTok extends Token       // :
 case object PrintTok extends Token
+case object ArrayTok extends Token
 
 //Types
 case object NumType extends Token with Type
 case object StrType extends Token with Type
 case object BoolType extends Token with Type
 case object VoidType extends Token with Type
+case class ArrayType(typ: Type) extends Token with Type
 
 //Literals
 case class Str(str: String) extends Token with Expr
 case class Num(num: Int) extends Token with Expr
 case class Ident(name: String) extends Token with Expr
 case class Bool(bool: Boolean) extends Token with Expr
+case class Arr(arr: Option[List[Expr]]) extends Token with Expr
 
 /*------------------------*/
 /*  Abstract Syntax Tree  */
@@ -126,6 +129,7 @@ sealed trait Value
 case class IntVal(n: Int) extends Value
 case class BoolVal(b: Boolean) extends Value
 case class StrVal(s: String) extends Value 
+case class ArrayVal(a: Array[Value]) extends Value
 case object VoidVal extends Value
 
 //Arguments

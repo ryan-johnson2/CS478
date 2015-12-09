@@ -61,7 +61,8 @@ object Interpreter {
                             if (!(matchType(argVal, param.typ))) throw new Exception("Types don't match!")
                             else curEnv += (paramName -> new Location(argVal))
                         }
-                        try {exec(body, curEnv, id.name)}
+                        val execEnv = env + (id.name -> new Location(Closure(retType, params, body, curEnv, parent)))
+                        try {exec(body, execEnv, id.name)}
                         catch {
                             case e: ReturnInt => return IntVal(e.getMessage.toInt)
                             case e: ReturnBool => return BoolVal(e.getMessage.toBoolean)

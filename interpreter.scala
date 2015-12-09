@@ -138,19 +138,19 @@ object Interpreter {
                         case _ => throw new Exception("Not a supported type!")
                     }
                 case Body(stmts) => 
-                    for (stmt <- stmts) exec(stmt, env, curFn)
+                    for (stmt <- stmts) env = exec(stmt, env, curFn)
                 case While(cond, bod) => 
-                    while (evalBool(cond, env)) exec(bod, env, curFn)
+                    while (evalBool(cond, env)) env = exec(bod, env, curFn)
                 case For(dec, cond, count, bod) =>
-                    exec(dec, env, curFn)
+                    env = exec(dec, env, curFn)
                     while (evalBool(cond, env)) {
-                        exec(bod, env, curFn)
-                        exec(count, env, curFn)
+                        env = exec(bod, env, curFn)
+                        env = exec(count, env, curFn)
                     }
                 case If(cond, body, pElse) =>
                     if (evalBool(cond, env))
-                        exec(body, env, curFn)
-                    else for (elseStmt <- pElse) exec(elseStmt, env, curFn)
+                        env = exec(body, env, curFn)
+                    else for (elseStmt <- pElse) env = exec(elseStmt, env, curFn)
                 case Assign(id, value) => id match {
                     case Ident(s) => env.getOrElse(s, throw new Exception(id + " not defined!")).set(eval(value, env))
                     case _ => throw new Exception("NO")}

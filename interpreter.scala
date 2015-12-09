@@ -5,7 +5,12 @@ object Interpreter {
     def interpret(prog: Prog) = {
         //Parser packages programs in a function with an empty name, so we don't need any global memory
         //For testing only
+        //Reserved: RETURN, maps to current return value
         type Env = [String, Location]
+        
+        case class ReturnInt(retInt: String) extends Exception(retInt)
+        case class ReturnBool(retBool: String) extends Exception(retBool)
+        case class ReturnString(retStr: String) extends Exception(retStr)
         
         var testRet = List.empty[Any]
 
@@ -47,36 +52,12 @@ object Interpreter {
                 }
                 try {exec(env(id.name).get.body, id.name)}
                 catch {
-                    case (_: ReturnValue) => 
+                    case e: ReturnInt => IntVal(e.getMessage.toInt)
+                    case e: ReturnBool => BoolVal(e.getMessage.toBoolean)
+                    case e: ReturnStr => StrVal(e.getMessage)                    
                 }
-                
-                
-                val returnVal = fnEnv(id.name).retVal
-                if (returnVal != None) returnVal.get
-                else VoidVal
-            case _ => throw new Exception("Not a valid expression")   
-            
-                // var cbvrMap = Map.empty[String, String] // All these values will be strings
-                //val parentIsGlobal = (fnEnv(id.name).parent == "")
-                /* for (i <- 0 until args.size) {
-                    val argExpr = args(i).expr; val argIsCBVR = args(i).cbvr
-                    val argi = eval(argExpr, env)
-                    val parami = params(i)
-                    if (!(matchType(argi, parami._2))) throw new Exception("Types don't match!")
-                    else {
-                        fnEnv(id.name).env += (parami._1.name -> argi)
-                        if (argIsCBVR) 
-                            cbvrMap += (parami._1.name -> getArgName(args(i)))
-                    }
-                } */
-                //exec(env(id.name).get.body, id.name)
-                //for ((param, argName) <- cbvrMap) {
-                //    if (parentIsGlobal) globalMem += (argName -> fnEnv(id.name).env(param))
-                //    else fnEnv(fnEnv(id.name).parent).env += (argName -> fnEnv(id.name).env(param))
-                //} // Changes parent variables to those determined in the function; call by value result
-                //val returnVal = fnEnv(id.name).retVal
-                //if (returnVal != None) returnVal.get
-                //else VoidVal
+                VoidVal
+            case _ => throw new Exception("Not a valid expression")
         }
 
         def evalNum(expr: Expr, env: Env): Int = expr match {
@@ -140,16 +121,9 @@ object Interpreter {
                 case Ret(expr) => // Change to use exceptions
                     val ans = eval(expr, env)
                     ans match {
-                        case BoolVal(b) => 
-                            fnEnv(curFn).retVal = Some(BoolVal(b))
-                            testRet = b +: testRet
-                        case IntVal(n) => 
-                            fnEnv(curFn).retVal = Some(IntVal(n))
-                            testRet = n +: testRet
-                        case StrVal(s) => 
-                            fnEnv(curFn).retVal = Some(StrVal(s))
-                            testRet = s +: testRet
-                        case _ => throw new Exception("invalid return")
+                        case IntVal(n) => throw new ReturnInt(n.toString)
+                        case BoolVal(b) => throw new ReturnBool(b.toString)
+                        case StrVal(s) => throw new ReturnStr(s)
                     }
                 case Body(stmts) => 
                     for (stmt <- stmts) exec(stmt, curFn)
@@ -166,9 +140,7 @@ object Interpreter {
                         exec(body, curFn)
                     else for (elseStmt <- pElse) exec(elseStmt, curFn)
                 case Assign(id, value) =>
-                    val curVal = env.getOrElse(id, throw new Exception(id + " not defined!").get
-                    if (curVal.isConst) throw new Exception("Cannot assign constant variable " + id)
-                    else env(id).set(eval(value, env))
+                    env.getOrElse(id, throw new Exception(id + " not defined!").set(eval(value, env))
                 case VarDef(id, value) =>
                     env += (id.name -> new Location(eval(value, env)))
                 case ConstDef(id, value) =>

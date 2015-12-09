@@ -2,7 +2,7 @@ package lang
 
 object Interpreter {
 
-    def interpret(body: Stmt) = {
+    def interpret(body: Prog) = {
         //Parser packages programs in a function with an empty name, so we don't need any global memory
         //For testing only
         //Reserved: RETURN, maps to current return value
@@ -63,7 +63,7 @@ object Interpreter {
                             case e: ReturnBool => return BoolVal(e.getMessage.toBoolean)
                             case e: ReturnStr => return StrVal(e.getMessage)                    
                         }
-                        VoidVal
+                        return VoidVal
                     case _ => throw new Exception("Not a function!")
                 }
                 
@@ -172,9 +172,9 @@ object Interpreter {
             env
         }
         
-        //val mainEnv = exec(prog.fndef, Map.empty[String, Location], "")
-        //exec(ExprAsStmt(prog.fncall), mainEnv, "")
+        val mainEnv = exec(body.fndef, Map.empty[String, Location], "")
+        val e = exec(body.fncall, mainEnv, "")
         //testRet.reverse
-        val e = exec(body, Map.empty[String, Location], "")
+        //val e = exec(body, Map.empty[String, Location], "")
     }
 }

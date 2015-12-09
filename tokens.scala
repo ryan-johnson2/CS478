@@ -113,7 +113,7 @@ case class ConstDef(typ: Type, id: Expr, expr: Expr) extends Stmt
 case class FnDef(typ: Type, id: Expr, args: List[Argument], bod: Stmt) extends Stmt
 
 //Programs
-case class Prog(fndef: FnDef, fncall: FnCall)
+case class Prog(fndef: FnDef, fncall: Stmt)
 
 /*--------------*/
 /*  Eval Types  */

@@ -49,7 +49,7 @@ object Interpreter {
                     case Closure(retType, params, body, fnEnv, parent) =>
                         println("Function environment")
                         println(fnEnv)
-                        var curEnv = env
+                        var curEnv = fnEnv
                         val inputs = args.zip(params)
                         if (args.size != params.size) throw new Exception("Incorrect number of parameters!")                
                         for ((arg, param) <- inputs) {

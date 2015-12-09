@@ -2,15 +2,15 @@ package lang
 
 object Interpreter {
 
-    def interpret(prog: Prog) = {
+    def interpret(body: Stmt) = {
         //Parser packages programs in a function with an empty name, so we don't need any global memory
         //For testing only
         //Reserved: RETURN, maps to current return value
-        type Env = [String, Location]
+        type Env = Map[String, Location]
         
         case class ReturnInt(retInt: String) extends Exception(retInt)
         case class ReturnBool(retBool: String) extends Exception(retBool)
-        case class ReturnString(retStr: String) extends Exception(retStr)
+        case class ReturnStr(retStr: String) extends Exception(retStr)
         
         var testRet = List.empty[Any]
 
@@ -32,31 +32,41 @@ object Interpreter {
             case Neg(num) => IntVal(evalNum(expr, env))
             case Str(str) => StrVal(evalStr(expr, env))
             case Bool(bool) => BoolVal(evalBool(expr, env))
-            case PGT(left, right) => BoolVal(evalBool(expr, env))
-            case PLT(left, right) => BoolVal(evalBool(expr, env))
-            case PGTE(left, right) => BoolVal(evalBool(expr, env))
-            case PLTE(left, right) => BoolVal(evalBool(expr, env))
-            case PEqual(left, right) => BoolVal(evalBool(expr, env))
-            case PNotEqual(left, right) => BoolVal(evalBool(expr, env))
-            case POr(left, right) => BoolVal(evalBool(expr, env))
-            case PAnd(left, right) => BoolVal(evalBool(expr, env))
-            case PNot(bool) => BoolVal(evalBool(expr, env))
+            case GT(left, right) => BoolVal(evalBool(expr, env))
+            case LT(left, right) => BoolVal(evalBool(expr, env))
+            case GTE(left, right) => BoolVal(evalBool(expr, env))
+            case LTE(left, right) => BoolVal(evalBool(expr, env))
+            case Equal(left, right) => BoolVal(evalBool(expr, env))
+            case NotEqual(left, right) => BoolVal(evalBool(expr, env))
+            case Or(left, right) => BoolVal(evalBool(expr, env))
+            case And(left, right) => BoolVal(evalBool(expr, env))
+            case Not(bool) => BoolVal(evalBool(expr, env))
             case Ident(name) => env.getOrElse(name, throw new Exception("Unassigned variable")).get
             case FnCall(id, args) =>
-                val inputs = args.zip(env(id.name).get.params)
-                if (args.size != params.size) throw new Exception("Incorrect number of parameters!")                
-                for ((arg, param) <- inputs) {
-                    val argVal = eval(arg.expr, env)
-                    if (!(matchType(argVal, param._2))) throw new Exception("Types don't match!")
-                    else env(id.name).get.env += (param._1.name -> arg)
+                env(id.name).get match {
+                    case Closure(retType, params, body, fnEnv, parent) =>
+                        var curEnv = fnEnv 
+                        val inputs = args.zip(params)
+                        if (args.size != params.size) throw new Exception("Incorrect number of parameters!")                
+                        for ((arg, param) <- inputs) {
+                            val paramName = param.ident match {
+                                case Ident(s) => s; 
+                                case _ => throw new Exception("NOPE TRY AGAIN")
+                            }
+                            val argVal = eval(arg, env)
+                            if (!(matchType(argVal, param.typ))) throw new Exception("Types don't match!")
+                            else curEnv += (paramName -> new Location(eval(arg, fnEnv)))
+                        }
+                        try {exec(body, curEnv, id.name)}
+                        catch {
+                            case e: ReturnInt => IntVal(e.getMessage.toInt)
+                            case e: ReturnBool => BoolVal(e.getMessage.toBoolean)
+                            case e: ReturnStr => StrVal(e.getMessage)                    
+                        }
+                        VoidVal
+                    case _ => throw new Exception("Not a function!")
                 }
-                try {exec(env(id.name).get.body, id.name)}
-                catch {
-                    case e: ReturnInt => IntVal(e.getMessage.toInt)
-                    case e: ReturnBool => BoolVal(e.getMessage.toBoolean)
-                    case e: ReturnStr => StrVal(e.getMessage)                    
-                }
-                VoidVal
+                
             case _ => throw new Exception("Not a valid expression")
         }
 
@@ -82,15 +92,15 @@ object Interpreter {
 
         def evalBool(expr: Expr, env: Env): Boolean = expr match {
             case Bool(bool) => bool
-            case PGT(left, right) => evalNum(left, env) > evalNum(right, env)
-            case PLT(left, right) => evalNum(left, env) < evalNum(right, env)
-            case PGTE(left, right) => evalNum(left, env) >= evalNum(right, env)
-            case PLTE(left, right) => evalNum(left, env) <= evalNum(right, env)
-            case PEqual(left, right) => eval(left, env) == eval(right, env)
-            case PNotEqual(left, right) => eval(left, env) != eval(right, env)
-            case POr(left, right) => evalBool(left, env) || evalBool(right, env)
-            case PAnd(left, right) => evalBool(left, env) && evalBool(right, env)
-            case PNot(bool) => !evalBool(bool, env)
+            case GT(left, right) => evalNum(left, env) > evalNum(right, env)
+            case LT(left, right) => evalNum(left, env) < evalNum(right, env)
+            case GTE(left, right) => evalNum(left, env) >= evalNum(right, env)
+            case LTE(left, right) => evalNum(left, env) <= evalNum(right, env)
+            case Equal(left, right) => eval(left, env) == eval(right, env)
+            case NotEqual(left, right) => eval(left, env) != eval(right, env)
+            case Or(left, right) => evalBool(left, env) || evalBool(right, env)
+            case And(left, right) => evalBool(left, env) && evalBool(right, env)
+            case Not(bool) => !evalBool(bool, env)
             case Ident(name) => eval(expr, env) match {
                 case BoolVal(b) => b
                 case _ => throw new Exception("Not a bool variable")
@@ -111,12 +121,13 @@ object Interpreter {
             case _ => throw new Exception("Not a valid string expression")
         }
         
-        def getArgName(arg: Argument): String = arg.expr match {
+        def getArgName(arg: Argument): String = arg.ident match {
             case Ident(name) => name
             case _ => throw new Exception("Not a candidate for CBVR")
         }
 
-        def exec(stmt: Stmt, env: Env): Env = {
+        def exec(stmt: Stmt, curEnv: Env, curFn: String): Env = {
+            var env = curEnv
             stmt match {
                 case Ret(expr) => // Change to use exceptions
                     val ans = eval(expr, env)
@@ -124,37 +135,43 @@ object Interpreter {
                         case IntVal(n) => throw new ReturnInt(n.toString)
                         case BoolVal(b) => throw new ReturnBool(b.toString)
                         case StrVal(s) => throw new ReturnStr(s)
+                        case _ => throw new Exception("Not a supported type!")
                     }
                 case Body(stmts) => 
-                    for (stmt <- stmts) exec(stmt, curFn)
-                case PWhile(cond, bod) => 
-                    while (evalBool(cond, env)) exec(bod, curFn)
-                case PFor(dec, cond, count, bod) =>
-                    exec(dec, curFn)
+                    for (stmt <- stmts) exec(stmt, env, curFn)
+                case While(cond, bod) => 
+                    while (evalBool(cond, env)) exec(bod, env, curFn)
+                case For(dec, cond, count, bod) =>
+                    exec(dec, env, curFn)
                     while (evalBool(cond, env)) {
-                        exec(bod, curFn)
-                        exec(count, curFn)
+                        exec(bod, env, curFn)
+                        exec(count, env, curFn)
                     }
-                case PIf(cond, body, pElse) =>
+                case If(cond, body, pElse) =>
                     if (evalBool(cond, env))
-                        exec(body, curFn)
-                    else for (elseStmt <- pElse) exec(elseStmt, curFn)
-                case Assign(id, value) =>
-                    env.getOrElse(id, throw new Exception(id + " not defined!").set(eval(value, env))
-                case VarDef(id, value) =>
-                    env += (id.name -> new Location(eval(value, env)))
-                case ConstDef(id, value) =>
-                    env += (id.name -> new Location(eval(value, env), true))
-                case FnDef(typ, id, args, bod) =>
-                    env += (id.name -> Closure(typ, None, args, bod, env, curFn))
+                        exec(body, env, curFn)
+                    else for (elseStmt <- pElse) exec(elseStmt, env, curFn)
+                case Assign(id, value) => id match {
+                    case Ident(s) => env.getOrElse(s, throw new Exception(id + " not defined!")).set(eval(value, env))
+                    case _ => throw new Exception("NO")}
+                case VarDef(typ, id, expr) => id match {
+                    case Ident(s) => env += (s -> new Location(eval(expr, env)))
+                    case _ => throw new Exception("NO")}   
+                case ConstDef(typ, id, expr) => id match {
+                    case Ident(s) => env += (s -> new Location(eval(expr, env), true))
+                    case _ => throw new Exception("NO")}                    
+                case FnDef(typ, id, args, bod) => id match {
+                    case Ident(s) => env += (s -> new Location(Closure(typ, args, bod, env, curFn)))
+                    case _ => throw new Exception("NO")} 
                 case ExprAsStmt(expr) => eval(expr, env)
                 case _ => println("Broken")
             }
             env
         }
         
-        val mainEnv = exec(prog.fndef, Map.empty[String, Location])
-        exec(prog.fncall, mainEnv)
-        testRet.reverse
+        //val mainEnv = exec(prog.fndef, Map.empty[String, Location], "")
+        //exec(ExprAsStmt(prog.fncall), mainEnv, "")
+        //testRet.reverse
+        val e = exec(body, Map.empty[String, Location], "")
     }
 }

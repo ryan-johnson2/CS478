@@ -130,7 +130,7 @@ case object VoidVal extends Value
 case class Argument(ident: Expr, typ: Type, cbvr: Boolean = false)
 
 //Closure
-case class Closure(retType: Type, var retVal: Option[Value], params: List[Argument], body: Stmt, var env: Map[String, Location], parent: Ident) extends Value
+case class Closure(retType: Type, params: List[Argument], body: Stmt, var env: Map[String, Location], parent: String) extends Value
 
 //Location
 class Location(value: Value, const: Boolean = false) {

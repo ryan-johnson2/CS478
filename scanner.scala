@@ -12,7 +12,7 @@ object Scanner {
             var i = index
 
             //return a list with the end of input token if we are at the end of the list
-            if (i >= tLen) return List(EndOfInputTok)
+            if (i >= tLen) return List(RCurlTok)
 
             //get the character in text at the index
             val c = text(i)
@@ -102,6 +102,6 @@ object Scanner {
         }
 
         //run scan starting at the beginning of text
-        scan(0)
+        LCurlTok +: scan(0)
     }
 }

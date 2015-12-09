@@ -24,10 +24,10 @@ Mutual Recursion
 Record Types
 - Vaporware
 Typechecker
-- Done by interpreter
+- Done by interpreter, except for functions
 Reference Manual
 - Included in CFG
 
 Extra Feature:
 Pattern Matching
-- Can be scanned and parsed, not interpreted
+- Fully working

@@ -142,11 +142,11 @@ object Parser extends parsing.Parsers[Token] {
         
 
     def pAssign: Parser[Stmt] =
-        pIdent ~ AssgnTok ~ pExpr7 ~ SemiColTok ^^ { case ident ~ _ ~ expr ~ _ => Assign(ident, expr) } |
-        pIdent ~ AddEqTok ~ pExpr7 ~ SemiColTok ^^ { case ident ~ _ ~ expr ~ _ => Assign(ident, Add(ident, expr)) } |
-        pIdent ~ SubEqTok ~ pExpr7 ~ SemiColTok ^^ { case ident ~ _ ~ expr ~ _ => Assign(ident, Sub(ident, expr)) } |
-        pIdent ~ DivEqTok ~ pExpr7 ~ SemiColTok ^^ { case ident ~ _ ~ expr ~ _ => Assign(ident, Div(ident, expr)) } |
-        pIdent ~ MultEqTok ~ pExpr7 ~ SemiColTok ^^ { case ident ~ _ ~ expr ~ _ => Assign(ident, Mult(ident, expr)) }
+        pExpr ~ AssgnTok ~ pExpr7 ~ SemiColTok ^^ { case ident ~ _ ~ expr ~ _ => Assign(ident, expr) } |
+        pExpr ~ AddEqTok ~ pExpr7 ~ SemiColTok ^^ { case ident ~ _ ~ expr ~ _ => Assign(ident, Add(ident, expr)) } |
+        pExpr ~ SubEqTok ~ pExpr7 ~ SemiColTok ^^ { case ident ~ _ ~ expr ~ _ => Assign(ident, Sub(ident, expr)) } |
+        pExpr ~ DivEqTok ~ pExpr7 ~ SemiColTok ^^ { case ident ~ _ ~ expr ~ _ => Assign(ident, Div(ident, expr)) } |
+        pExpr ~ MultEqTok ~ pExpr7 ~ SemiColTok ^^ { case ident ~ _ ~ expr ~ _ => Assign(ident, Mult(ident, expr)) }
 
     def pWhile: Parser[Stmt] = 
         WhileTok ~ LParenTok ~ pExpr7 ~ RParenTok ~ pBody ^^ {

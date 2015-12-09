@@ -115,7 +115,7 @@ object Interpreter {
             }
             case _ => throw new Exception("Not a valid string expression")
         }
-        
+                
         def getArgName(arg: Argument): String = arg.ident match {
             case Ident(name) => name
             case _ => throw new Exception("Not a candidate for CBVR")
@@ -164,16 +164,10 @@ object Interpreter {
                     println(ans)
                 case _ => println("Broken")
             }
-            //env.foreach(x => println(x._1, x._2.get))
-            //println(env)
             env
         }
         
         val mainEnv = exec(body.fndef, Map.empty[String, Location], "")
-        //println("Main environment")
-        //println(mainEnv)
         val e = exec(body.fncall, mainEnv, "")
-        //testRet.reverse
-        //val e = exec(body, Map.empty[String, Location], "")
     }
 }

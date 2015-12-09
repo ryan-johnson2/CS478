@@ -4,7 +4,7 @@ int sum(x: int) {
         return 0; 
     }
     else {
-        print x;  
+        //print x;  
         return x + sum(x - 1); 
     }
 }

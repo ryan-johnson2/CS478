@@ -99,8 +99,7 @@ case class And(left: Expr, right: Expr) extends Expr
 case class Not(expr: Expr) extends Expr
 case class Neg(expr: Expr) extends Expr
 case class FnCall(id: Ident, args: List[Expr]) extends Expr
-case class Pattern(itm: Expr, cases: List[Case]) extends Expr
-case class Case(valu: Expr, retVal: Expr)
+
 
 
 //Statements
@@ -112,6 +111,8 @@ case class For(dec: Stmt, cond: Expr, count: Stmt, bod: Stmt) extends Stmt
 case class If(cond: Expr, bod: Stmt, pElse: Option[Stmt])  extends Stmt
 case class ExprAsStmt(expr: Expr) extends Stmt
 case class Print(data: Expr) extends Stmt
+case class Pattern(itm: Expr, cases: List[Case]) extends Stmt
+case class Case(value: Expr, body: Stmt)
 
 //Declarations
 case class VarDef(typ: Type, id: Expr, expr: Expr) extends Stmt

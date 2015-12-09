@@ -12,7 +12,6 @@ object Parser extends parsing.Parsers[Token] {
 
     def pExpr: Parser[Expr] =
         pFuncCall |
-        pPattern |
         pIdent |
         pLiteral |
         pArray |
@@ -130,14 +129,14 @@ object Parser extends parsing.Parsers[Token] {
         }
     }
 
-    def pPattern: Parser[Expr] = 
+    def pPattern: Parser[Stmt] = 
         MatchTok ~ pExpr7 ~ LCurlTok ~ pCase.+ ~ RCurlTok ^^ {
             case _ ~ expr1 ~ _ ~ cases ~ _ => Pattern(expr1, cases)
         }
 
     def pCase: Parser[Case] = 
-        CaseTok ~ pExpr7 ~ ArrowTok ~ pExpr7 ~ SemiColTok ^^ {
-            case _ ~ expr1 ~ _ ~ expr2 ~ _ => Case(expr1, expr2)
+        CaseTok ~ pExpr7 ~ ArrowTok ~ pStmt  ^^ {
+            case _ ~ expr1 ~ _ ~ stmt => Case(expr1, stmt)
         }
 
     // Parse Statements
@@ -149,6 +148,7 @@ object Parser extends parsing.Parsers[Token] {
         pFor |
         pIf |
         pPrint |
+        pPattern |
         pDeclar
         
 

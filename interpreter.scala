@@ -163,6 +163,16 @@ object Interpreter {
                 case Print(d) =>
                     val ans = eval(d, env)
                     println(ans)
+                case Pattern(itm, cases) =>
+                    val itmVal = eval(itm, env)
+                    var matched = false
+                    for {cse <- cases; if !matched} {
+                        val cseVal = eval(cse.value, env)
+                        if (itmVal == cseVal) {
+                            env = exec(cse.body, env, "")
+                            matched = true
+                        }
+                    }
                 case _ => println("Broken")
             }
             env

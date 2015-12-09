@@ -1,0 +1,9 @@
+int x = 7;
+
+int main (x: int) {
+    int y = 5;
+    print "test printing";
+    return y + x;
+}
+
+print main(2);

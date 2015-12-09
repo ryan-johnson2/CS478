@@ -1,0 +1,11 @@
+int rec1(x: int) {
+    if (x <= 0) {return 1;}
+    else {return 3*rec2(x-1); }
+}
+
+int rec2(x: int) {
+    if (x <= 0) {return 1;}
+    else { return 2*rec1(x-1); }
+}
+
+print rec1(5);

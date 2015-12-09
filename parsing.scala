@@ -72,7 +72,7 @@ trait Parsers[Token] { // see note D
     } */
 
     def filter(predicate: A => Boolean): Parser[A] = 
-      this >> { a => if (predicate(A)) succeed(a) else fail("Wrong") }
+      this >> { a => if (predicate(a)) succeed(a) else fail("Wrong") }
 
     def flatMap[B](f: A => Parser[B]): Parser[B] = Parser{ toks =>
       val (a, toks2) = this(toks)

@@ -1,0 +1,152 @@
+Name: Ryan Johnson
+Name: Austin Herrling
+
+Part A:
+
+comment    - //.*\n
+identifier - [a-zA-Z](_?[a-zA-Z\d])*
+string literal - "[^"]*"
+numeric literal - [1-9][0-9]* | 0
+float literal  - 0\.[0-9]+ | [1-9][0-9]+\.[0-9]+
+boolean literal - true | false
+
+Keywords - and, or, not, if, elif, else, for, while, int, string, 
+           float, boolean, return, match, case, array, null, 
+           true, false, void
+           
+Symbols - =, <=, >=, (, ), {, }, [, ], ;, *, +, -, /
+          ", ', `, <, >, .., %, **, ==, !=, +=, -=, 
+          *=, /=, \,
+  
+  
+Part B:
+
+<lit> =  string literal | numeric literal | float literal | boolean literal
+
+<type> = int | float | string | boolean
+  
+<expr> = <lit> | <identifier>
+       | <expr> '+' <expr>
+       | <expr> '-' <expr>
+       | <expr> '*' <expr>
+       | <expr> '/' <expr>
+       | <expr> '%' <expr>
+       | <expr> '**' <expr>    
+       | <expr> '>' <expr>
+       | <expr> '<' <expr>
+       | <expr> '<=' <expr>
+       | <expr> '>=' <expr>
+       | <expr> '==' <expr>
+       | <expr> '!=' <expr>
+       | <expr> 'or' <expr>
+       | <expr> 'and' <expr>
+       | '-' <expr>
+       | 'not' <expr>
+       | '(' <expr> ')'
+       | <identifier> '(' (<expr> (',' <expr>)*)? ')'';'
+ 
+<stmt> = <expr> ';'
+       | <identifier> ('=' | '+=' | '-=' | '\=' | '*=') <expr>';'
+       | return <expr> ';'
+       | while '(' <expr> ')' <body>
+       | for '(' <declar> ';' <expr> ';' <stmt> ')' <body>
+       | if '(' <expr> ')' <body> (elif '(' <expr> ')' <body>)* (else <body>)? 
+
+<declar> = <type> <identifier> '=' <expr> ';'
+         | <type> '`'<identifier> '=' <expr> ';'
+         | <type> <identifier> '(' (<identifier> ':' type (',' <identifier> ':' type)*)? ')' <body>
+
+<body> = '{' <stmt>* '}'  
+
+Part C:
+
+<expr> = <lit> 
+       | <identifier>
+       | <identifier> '(' (<expr7> (',' <expr7>)*)? ')'';'
+       | '(' <expr7> ')'
+
+<expr0> = <expr0> '**' <expr> 
+        | <expr>
+
+<expr1> = '-' <expr1> 
+        | <expr0>
+
+<expr2> = <expr2> '*' <expr1> 
+        | <expr2> '/' <expr1> 
+        | <expr2> '%' <expr1> 
+        | <expr1>
+
+<expr3> = <expr3> '+' <expr2> 
+        | <expr3> '-' <expr2> 
+        | <expr2>
+
+<expr4> = 'not' <expr4> 
+        | <expr3>
+
+<expr5> = <expr> '<' <expr>
+        | <expr> '>' <expr>
+        | <expr> '<=' <expr>
+        | <expr> '>=' <expr>
+        | <expr> '==' <expr>
+        | <expr> '!=' <expr>
+        | <expr4>
+
+<expr6> = <expr6> 'and' <expr5> 
+        | <expr5>
+
+<expr7> = <expr7> 'or' <expr6> 
+        | <expr6>
+          
+<stmt> = <expr> ';'
+       | <identifier> ( '=' | '+=' | '-=' | '\=' | '*=' ) <expr> ';'
+       | return <expr> ';'
+       | while '(' <expr> ')' <body>
+       | for '(' <declar> ';' <expr> ';' <stmt> ')' <body>
+       | if '(' <expr> ')' <body> ( elif '(' <expr> ')' <body> )* ( else <body> )?
+
+<declar> = type <identifier> '=' <expr> ';'
+         | type <identifier> '('( <identifier> ':' type (',' <identifier> ':' type )* )? ')' <body>
+
+<body> = '{' ( <stmt> | <declar> )* '}'
+          
+
+Part C without left recursion:
+          
+<expr> = <lit> 
+       | <identifier>
+       | <identifier> '(' (<expr7> (',' <expr7>)*)? ')'
+       | '(' <expr7> ')'
+        
+<expr0> = <expr> ('**' <expr>)*
+
+<expr1> = '-' <expr0> 
+
+<expr2> = <expr1> ('*' <expr1> | '/' <expr1> | '%' <expr1>)*
+
+<expr3> = <expr2> ('+' <expr2> | '-' <expr2>)*
+
+<expr4> = 'not' <expr3> 
+
+<expr5> = <expr> '<' <expr> // No recursion to fix; also 
+        | <expr> '>' <expr> // necessitates parentheses for
+        | <expr> '<=' <expr> // 'arguments' of comparators
+        | <expr> '>=' <expr>
+        | <expr> '==' <expr>
+        | <expr> '!=' <expr>
+        | <expr4>
+
+<expr6> = <expr5> ('and' <expr5>)*
+
+<expr7> = <expr6> ('or' <expr6>)*
+          
+<stmt> = <expr> ';'
+       | <identifier> ( '=' | '+=' | '-=' | '\=' | '*=' ) <expr> ';'
+       | return <expr> ';'
+       | while '(' <expr> ')' <body>
+       | for '(' <declar> ; <expr> ';' <stmt> ')' <body>
+       | if '(' <expr> ')' <body> ( elif '(' <expr> ')' <body> )* ( else <body> )?
+
+<declar> = type <identifier> '=' <expr> ';'
+         | type <identifier> '('( <identifier> ':' type (',' <identifier> ':' type )* )? ')' <body>
+
+<body> = '{' ( <stmt> | <declar> )* '}'

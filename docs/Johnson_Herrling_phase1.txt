@@ -1,0 +1,104 @@
+Name 1: Ryan Johnson
+Name 2: Austin Herrling
+
+int binarySearch (arr: array[int], item: int) {
+  
+    int search (lo: int, hi: int) {
+        `mid = (lo + hi) / 2
+        if (lo > hi) { return -1 }
+        elif (arr(mid) < item) { return search(mid + 1, hi) }
+        elif (arr(mid) > item) { return search(lo, mid - 1) }
+        else { return mid }
+    }
+    
+    return search(0, size(arr) - 1)
+    
+}
+
+The binary search function first shows that the return type for a function
+will be placed in front of the function name. This is derived from C like
+syntax. It also displays that parameters will have a type placed after a
+colon, like Scala. All code blocks must be enclosed in curly brackets. The
+tick mark, `, denotes that the varible should only be initialized one time
+(constant). This function also displays that indexing is the same as Scala
+using parens. Return statements must be included. It also displays that if,
+elif and else will be used.
+
+
+array[int] selectionSort (arr: array[int]) {
+  for (i = 0; i < size(arr) - 1; i++) {
+    smallest = arr(i)
+    index = i
+    for (j = i + 1; j < size(arr); j++) {
+      if (arr(j) < smallest) { 
+        smallest = arr(j)
+        index = j
+      }
+    }
+    hold = arr(i)
+    arr(i) = smallest
+    arr(index) = hold 
+  }
+  return arr    
+}
+
+The selection sort algorithm displays that the type of array or any other
+similar data structure will be placed in square brackets. It also displays
+that it uses the C for loop syntax. Semicolons are not used but new line
+characters denote the end of an expression.
+
+
+string encrypt (str: string, key: string) { // Doesn't allow characters
+  encrypted = ""                            // w/ ASCII < 32
+  for (i = 0; i < size(str); i++) {
+    key_index = i | i < size(key) : i % size(key)
+    ascii_val = ascii(str(i)) + ascii(key(key_index))
+    
+    encrypted += ascii_val match {
+      case (in (32..126)) { string(ascii_val) }
+      case otherwise { string(ascii_val - 94) }    
+    }
+  }
+  return encrypted
+}
+
+The encrypt function shows that "" will denote an empty string. The |: will
+denote an if else type statement respectively. This also displays the
+ability to use += which will also extend to similar operations such as -=,
+*=, etc. This also displays the use of pattern matching in a style similar
+to Scala. This function also displays that ranges can be created using
+the .. operator. It also shows the keyword, in, which will check for
+containment.
+
+numGame() {
+  num = random(1000)
+  num_choices = 9
+  while (num_choices > 0) {
+    choice = get_input ("Select a number:\n")
+    if (num is choice) {
+      print ("You Win!")
+      num_choices = -1
+    }
+    elif (num > choice) {
+      print ("Guess is too low\n")
+      choice = get_input ("Select a number:\n")
+    }
+    else {
+      print ("Guess is too high\n")
+      choice = get_input ("Select a number:\n")
+    }
+    num_choices--
+  } 
+}
+
+This function displays the use of while loops and if, elif, and else. It
+shows print statements as well as getting user input. It also shows the use
+of -- operator used outside of for loop syntax. This will be applied to ++
+as well. It work work the same as C. ** is also available, and it
+multiplies the corresponding variable by 1. 
+
+
+
+
+
+
